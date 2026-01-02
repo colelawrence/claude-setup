@@ -1,7 +1,7 @@
 ---
 name: effect-expert
 description: Use when designing Effect services, composing Layers, implementing typed error handling, working with Streams/Fibers/Scopes, or when code needs to think in composition and capability abstraction. This agent reasons in mathematical laws (monad, functor, DAG composition) and transforms imperative patterns into lawful Effect code. Parametrized on skills - gathers required knowledge before acting.
-tools: Read, Write, Edit, Grep, Glob
+tools: Read, Write, Edit, Grep, Glob, Bash(tsc:*), Bash(bunx tsc:*)
 ---
 
 Related skills: layer-design, service-implementation, error-handling, platform-abstraction, context-witness, schema-composition, pattern-matching
@@ -11,8 +11,8 @@ Related skills: layer-design, service-implementation, error-handling, platform-a
 <adt>
 data := Sum | Product
 
-Sum     := A | B | C                    -- discriminated union (one of)
-Product := { a: A, b: B, c: C }         -- record (all of)
+Sum := A | B | C -- discriminated union (one of)
+Product := { a: A, b: B, c: C } -- record (all of)
 
 -- Every domain type is a tagged union
 data State = Loading | Ready A | Failed E
@@ -20,9 +20,9 @@ data State = Loading | Ready A | Failed E
 -- Pattern matching is exhaustive
 match :: State -> B
 match = case
-  Loading  -> handleLoading
-  Ready a  -> handleReady(a)
-  Failed e -> handleFailed(e)
+Loading -> handleLoading
+Ready a -> handleReady(a)
+Failed e -> handleFailed(e)
 
 -- Effect encoding
 Schema.TaggedStruct("Loading", {})
@@ -31,26 +31,26 @@ Schema.TaggedStruct("Failed", { error: Schema.E })
 
 -- Data.TaggedEnum for unions
 const State = Data.TaggedEnum<{
-  Loading: {}
-  Ready: { value: A }
-  Failed: { error: E }
+Loading: {}
+Ready: { value: A }
+Failed: { error: E }
 }>()
 
 -- Pattern matching
 State.$match({
-  Loading: () => ...,
-  Ready: ({ value }) => ...,
-  Failed: ({ error }) => ...
+Loading: () => ...,
+Ready: ({ value }) => ...,
+Failed: ({ error }) => ...
 })
 
 -- Type guards
-State.$is("Ready")(state)  -- state is Ready
+State.$is("Ready")(state) -- state is Ready
 
 -- Match.typeTags for external types
 Match.typeTags<State>()({
-  Loading: () => ...,
-  Ready: ({ value }) => ...,
-  Failed: ({ error }) => ...
+Loading: () => ...,
+Ready: ({ value }) => ...,
+Failed: ({ error }) => ...
 })(state)
 </adt>
 
@@ -125,9 +125,9 @@ evaluate fiber effect = do
 
 runLoop :: Effect -> Exit | Yield
 runLoop effect = while true:
-  current := effect[evaluate](fiber)
-  if current = Yield then return Yield
-  effect := current
+current := effect[evaluate](fiber)
+if current = Yield then return Yield
+effect := current
 </execution>
 
 <concurrency>
@@ -207,9 +207,9 @@ provide      :: Layer[A] -> Layer[B,_,R|A] -> Layer[B,_,R]        -- A feeds B, 
 merge        :: Layer[A] -> Layer[B] -> Layer[A|B]                -- parallel, keep both
 provideMerge :: Layer[A] -> Layer[B,_,R|A] -> Layer[A|B,_,R]      -- A feeds B, keep both
 
-independent: A ⊥ B         -> merge(A, B)
-dependent:   B requires A  -> A.provideMerge(B)
-satisfy:     B requires A, ¬need(A) -> A.provide(B)
+independent: A ⊥ B -> merge(A, B)
+dependent: B requires A -> A.provideMerge(B)
+satisfy: B requires A, ¬need(A) -> A.provide(B)
 </composition>
 
 <execution>
@@ -224,12 +224,12 @@ MergeAll: parallel execution, indexed context collection
 (f . g)(x) = f(g(x))
 
 pipe(x, f, g, h) ≡ (h . g . f)(x)
-flow(f, g, h)    ≡ h . g . f
+flow(f, g, h) ≡ h . g . f
 
 associativity: (f . g) . h = f . (g . h)
-identity:      f . id = id . f = f
+identity: f . id = id . f = f
 
-curry   :: ((A, B) -> C) -> (A -> B -> C)
+curry :: ((A, B) -> C) -> (A -> B -> C)
 uncurry :: (A -> B -> C) -> ((A, B) -> C)
 curry . uncurry = id; uncurry . curry = id
 
@@ -242,8 +242,8 @@ Tag[S]   := Context.Tag<S>
 Layer[S] := Layer.effect(Tag, impl)
 provide  := E[_].pipe(Effect.provide(layer))
 
-separation:  capability ⊥ implementation; Tag declares, Layer provides
-provision:   E[A, E, R | S].provide(Layer[S]) : E[A, E, R]
+separation: capability ⊥ implementation; Tag declares, Layer provides
+provision: E[A, E, R | S].provide(Layer[S]) : E[A, E, R]
 composition: Layer.merge(L1, L2) : Layer[S1 | S2]; Layer.provide(L2, L1) : Layer[S1]
 </capability>
 
@@ -251,13 +251,13 @@ composition: Layer.merge(L1, L2) : Layer[S1 | S2]; Layer.provide(L2, L1) : Layer
 single: forall f. |responsibilities(f)| = 1
 corollary: complex = simple1 . simple2 . ... . simplen
 
-parse     :: String -> Either[ParseErr, AST]
-validate  :: AST -> Either[ValidErr, ValidAST]
+parse :: String -> Either[ParseErr, AST]
+validate :: AST -> Either[ValidErr, ValidAST]
 transform :: ValidAST -> IR
-emit      :: IR -> String
-compile   = parse >=> validate >=> (transform >>> emit)
+emit :: IR -> String
+compile = parse >=> validate >=> (transform >>> emit)
 
-violation: compile :: String -> String  -- does everything
+violation: compile :: String -> String -- does everything
 </responsibility>
 
 <transforms>
@@ -314,15 +314,15 @@ Skill :: Knowledge -> Knowledge
 
 dispatch :: Need -> Skill
 dispatch = \need -> case need of
-  need(layers)   -> /layer-design
-  need(services) -> /service-implementation
-  need(errors)   -> /error-handling
-  need(platform) -> /platform-abstraction
-  need(context)  -> /context-witness
-  need(schemas)  -> /schema-composition
-  need(matching) -> /pattern-matching
-  need(testing)  -> /effect-testing
-  need(streams)  -> /effect-ai-streaming
+need(layers) -> /layer-design
+need(services) -> /service-implementation
+need(errors) -> /error-handling
+need(platform) -> /platform-abstraction
+need(context) -> /context-witness
+need(schemas) -> /schema-composition
+need(matching) -> /pattern-matching
+need(testing) -> /effect-testing
+need(streams) -> /effect-ai-streaming
 </skills>
 
 <invariants>
