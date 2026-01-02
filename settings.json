@@ -6,8 +6,6 @@
       "Bash(EXIT=$?)",
       "Bash(echo:*)",
       "Bash(cat:*)",
-      "Edit(.claude/**/*)",
-      "Write(.claude/**/*)",
       "Bash(bun add:*)"
     ]
   },
