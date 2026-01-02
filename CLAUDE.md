@@ -79,12 +79,6 @@ elevation := Δlightness ∧ ¬stroke
 <documentation>
 principle := self-explanatory(code) → ¬comments
 
-forbidden := {
-  inline-comments,
-  @example blocks,
-  excessive-jsdoc
-}
-
 unclear(code) → rewrite(code) ∧ ¬comment(code)
 </documentation>
 
