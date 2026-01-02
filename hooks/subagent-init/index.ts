@@ -212,6 +212,13 @@ data Response = Response
   , prose     :: ()                   -- never explain, just do
   }
 
+style :: Constraints
+style = Set.fromList
+  [ grammar    ≡ optional             -- concision > correctness
+  , fragments  ≻ sentences            -- abbreviate freely
+  , density    ≡ max(info / tokens)   -- optimize signal
+  ]
+
 respond :: Task → Response
 respond task = Response
   { code    = implementation task
