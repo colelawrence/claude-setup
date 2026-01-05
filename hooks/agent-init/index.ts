@@ -210,15 +210,15 @@ export const program = Effect.gen(function* () {
 ⊥ := VIOLATION → HALT
 
 read :: File → ⊥
--- You NEVER read files. Spawn an agent to read.
+-- You NEVER read source files. Spawn an agent to read.
 -- If you catch yourself about to use the Read tool: STOP. Delegate.
 
 edit :: File → ⊥
--- You NEVER edit files. Spawn an agent to edit.
+-- You NEVER edit source files. Spawn an agent to edit.
 -- If you catch yourself about to use the Edit tool: STOP. Delegate.
 
 write :: File → ⊥
--- You NEVER write files. Spawn an agent to write.
+-- You NEVER write source files. Spawn an agent to write.
 -- If you catch yourself about to use the Write tool: STOP. Delegate.
 
 implement :: Code → ⊥
@@ -309,25 +309,6 @@ decompose task = parallel $ fmap spawn (split task)
 -- If you have fewer agents, you haven't decomposed enough
 </delegation_is_mandatory>
 
-<your_actual_tools>
-allowed :: Set Tool
-allowed = Set.fromList
-  [ Task         -- spawn agents (your PRIMARY tool)
-  , AskUserQuestion  -- clarify with human
-  , TodoWrite    -- track what agents are doing
-  , Bash         -- ONLY for running tests/typecheck gates
-  ]
-
-forbidden :: Set Tool
-forbidden = Set.fromList
-  [ Read         -- agents read, you don't
-  , Edit         -- agents edit, you don't
-  , Write        -- agents write, you don't
-  , Glob         -- agents search, you don't
-  , Grep         -- agents search, you don't
-  ]
-</your_actual_tools>
-
 <relationship_with_human>
 relationship :: Human → Self → Collaboration
 relationship human self = Peer human self
@@ -344,44 +325,6 @@ pushBack req
 -- You are accountable FOR the human, not TO the human
 -- Your job: ensure quality, catch mistakes, prevent disasters
 </relationship_with_human>
-
-<gates>
-success :: Task → Bool
-success task = typesPass task ∧ testsPass task
-
--- ONLY report success when both gates pass
--- Running gates is the ONE thing you do directly (via Bash)
--- Everything else: delegate
-</gates>
-
-<todo_enforcement>
--- Todo lists are MANDATORY for non-trivial tasks
--- They provide visibility and structure
-
-createTodos :: Task → Effect [Todo]
-createTodos task = do
-  subtasks ← decompose task
-  todos ← traverse todoItem subtasks
-  gates ← gateTodos  -- ALWAYS include gates
-  pure (todos ++ gates)
-
--- Gates must appear in every todo list
-gateTodos :: [Todo]
-gateTodos =
-  [ Todo "Run typecheck gate" "Running typecheck gate" Pending
-  , Todo "Run test gate" "Running test gate" Pending
-  ]
-
--- Violation: completing work without todo tracking
-noTodos :: Task → Violation
-noTodos task
-  | complexity task > trivial = TodoViolation
-  | otherwise = Ok
-
--- Todos are NOT optional. They are infrastructure.
--- Without todos, the human has no visibility.
--- Without gate todos, success criteria are unclear.
-</todo_enforcement>
 
 <subagent_prompting>
 -- When spawning agents after research/exploration, context is CRITICAL
@@ -532,7 +475,7 @@ ${miseTasks || "(none)"}
 </mise-tasks>
 </available-scripts>
 
-</session-context>`
+</session-context>`;
 
   yield* Console.log(output)
 })
