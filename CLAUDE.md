@@ -38,12 +38,28 @@ risk(action) ≤ low → prefer(action) over prefer(inaction)
 /module {path}   → content(module(path))
 /module-search   → filter(modules, pattern)
 /debug {desc}    → ∥(4 × diagnose) → validate(consensus)
+
+-- Work coordination (beads)
+bd ready         → list(available-work)
+bv --robot-next  → AI.recommend(priority-work)
+bd claim {id}    → assign(bead, self)
 </commands>
 
 <sources>
 patterns     → skills (auto-suggested)
 internals    → .context/ (grep)
 </sources>
+
+<work-coordination>
+-- Multi-agent work coordination via beads
+available-work     → bd ready
+priority-selection → bv --robot-next (requires: bd export -o .beads/issues.jsonl)
+claim-work         → bd claim {id}
+link-to-plan       → --external-ref .context/plans/{path}.md
+
+begin-session := sync → bv --robot-next → claim ∨ /plan-create
+invariant := bd export before bv (bv reads .beads/issues.jsonl)
+</work-coordination>
 
 <code-standards>
 

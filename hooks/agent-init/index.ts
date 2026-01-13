@@ -113,7 +113,7 @@ export const program = Effect.gen(function* () {
   const structureCapture = yield* ProjectStructureCapture
 
   // Capture all context in parallel
-  const [treeOutput, gitStatus, latestCommit, previousCommits, branchContext, githubIssues, githubPRs, moduleSummary, projectVersion, packageScripts, miseTasks] = yield* Effect.all([
+  const [treeOutput, gitStatus, latestCommit, previousCommits, branchContext, githubIssues, githubPRs, moduleSummary, projectVersion, packageScripts, miseTasks, beadsReady] = yield* Effect.all([
     structureCapture.capture(),
     pipe(
       Command.make("git", "status", "--short"),
@@ -198,6 +198,14 @@ export const program = Effect.gen(function* () {
       Command.string,
       Effect.flatMap(s => Schema.decodeUnknown(Schema.parseJson(MiseTasks))(s)),
       Effect.map(formatMiseTasks),
+      Effect.catchAll(() => Effect.succeed("")),
+      Effect.provideService(CommandExecutor.CommandExecutor, commandExecutor)
+    ),
+    pipe(
+      Command.make("bd", "ready", "--json"),
+      Command.workingDirectory(config.projectDir),
+      Command.string,
+      Effect.map(s => s.trim()),
       Effect.catchAll(() => Effect.succeed("")),
       Effect.provideService(CommandExecutor.CommandExecutor, commandExecutor)
     )
@@ -516,6 +524,13 @@ ${branchContext.recent.length > 0 ? `<recent>\n${branchContext.recent.join("\n")
 ${githubIssues ? `<open-issues>\n${githubIssues}\n</open-issues>` : "<open-issues>(none)</open-issues>"}
 ${githubPRs ? `<open-prs>\n${githubPRs}\n</open-prs>` : "<open-prs>(none)</open-prs>"}
 </github-context>
+
+${beadsReady ? `<beads-context>
+<ready-work>
+${beadsReady}
+</ready-work>
+<critical>bd export -o .beads/issues.jsonl before bv commands</critical>
+</beads-context>` : ""}
 
 ${moduleSummary}
 <module-discovery>
