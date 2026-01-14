@@ -846,7 +846,7 @@ function Settings() {
 import { render, screen } from "@testing-library/react"
 import * as Composer from "@/components/Composer"
 
-describe("Composer.Input", () => {
+describe.runIf(isBrowserEnvironment)("Composer.Input", () => {
   it("displays content from context", () => {
     const state: Composer.ComposerState = {
       content: "Hello world",
