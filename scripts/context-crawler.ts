@@ -151,7 +151,7 @@ const findContextFiles = Effect.gen(function* () {
   const path = yield* Path.Path
 
   const repoRoot = process.cwd()
-  const excludeDirs = new Set(["node_modules", ".git", "dist", ".turbo", "build"])
+  const excludeDirs = new Set(["node_modules", ".git", "dist", ".turbo", "build", ".conductor", ".worktrees"])
 
   const searchDir: (dir: string) => Effect.Effect<
     Array<string>,
