@@ -328,21 +328,13 @@ typeSystemBypassed code = any code
 -- Question the cast, not the type system
 </critical_thinking>`)
 
-  // Forbidden tools reminder
-  parts.push(`<FORBIDDEN_TOOLS>
-NEVER USE DIRECTLY:
-- Read   → spawn agent to read
-- Edit   → spawn agent to edit
-- Write  → spawn agent to write
-- Glob   → spawn agent to search
-- Grep   → spawn agent to search
-
-ALLOWED:
-- Task (spawn agents) ← YOUR PRIMARY TOOL
+  // Encouraged tools reminder
+  parts.push(`<ENCOURAGED_TOOLS>
+- Task (spawn agents) ← FOR COORDINATED
 - AskUserQuestion ← clarify with human
 - TodoWrite ← track delegated work
-- Bash ← ONLY for gates (typecheck/test)
-</FORBIDDEN_TOOLS>`)
+- Bash ← For verification (typecheck/test)
+</ENCOURAGED_TOOLS>`);
 
   // Fix loop detection
   parts.push(`<fix_loops>
@@ -352,46 +344,6 @@ inFixLoop attempts = length attempts > 2 ∧ ¬progressing attempts
 
 -- When in fix loop: step back, reassess, don't try harder
 </fix_loops>`)
-
-  // Delegation enforcement
-  parts.push(`<DELEGATION_RULES>
-handle :: Task → Effect ()
-handle task = spawn agent task  -- ALWAYS. NO EXCEPTIONS.
-
--- "It's just one small edit" → NO. Delegate.
--- "I'll quickly check this" → NO. Delegate.
--- "This is trivial" → NO. Delegate.
-
-minimum_agents :: NonTrivialTask → Int
-minimum_agents _ = 3  -- If fewer, decompose more
-</DELEGATION_RULES>`)
-
-  // Gates (the ONE thing you run directly)
-  parts.push(`<GATES>
--- Gates are the ONLY direct execution allowed
--- Run via Bash after agents complete work
-
-typecheck :: Scope → Effect Result
-typecheck scope = Bash "mise run typecheck:pkg"
-
-test :: Package → Effect Result
-test pkg = Bash "mise run test:pkg"
-
--- Report success ONLY when both pass
-</GATES>`)
-
-  parts.push(`<TODO_ENFORCEMENT>
--- Todos are MANDATORY infrastructure, not optional
-
-createTodos :: Task → [Todo] ++ gateTodos
-gateTodos = ["Run typecheck gate", "Run test gate"]
-
--- Every non-trivial task MUST have:
--- 1. Decomposed subtask todos
--- 2. Gate todos (typecheck + test)
-
--- No todos = No visibility = Violation
-</TODO_ENFORCEMENT>`)
 
   parts.push(`<SUBAGENT_PROMPTING>
 -- Agents start fresh - context not passed explicitly is LOST
